@@ -1,0 +1,65 @@
+version: '3.8'
+
+# ═════════════════════════════════════════════════════════════════════
+# Enterprise IT Support Copilot — Production Multi-Worker Compose
+# ─────────────────────────────────────────────────────────────────────
+# Designed for AWS EC2 / ECS / ASG deployments.
+# Runs Gunicorn with Uvicorn workers and connects to AWS Managed
+# Services (RDS PostgreSQL, ElastiCache Redis, S3 Bucket, Pinecone).
+# ═════════════════════════════════════════════════════════════════════
+
+services:
+  copilot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: it_copilot_app_prod
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "8080:8080"
+    command: ["gunicorn", "-c", "gunicorn_conf.py", "app.main:app"]
+    environment:
+      - APP_ENV=production
+      # Managed RDS connection details injected via AWS Secrets / .env
+      - DATABASE_URL=${DATABASE_URL:-}
+      - POSTGRES_HOST=${POSTGRES_HOST:-}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-}
+      - POSTGRES_DB=${POSTGRES_DB:-it_support_copilot}
+      - DB_POOL_SIZE=${DB_POOL_SIZE:-20}
+      - DB_MAX_OVERFLOW=${DB_MAX_OVERFLOW:-30}
+      # Managed ElastiCache Redis cluster
+      - REDIS_URL=${REDIS_URL:-}
+      - REDIS_HOST=${REDIS_HOST:-}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_CACHE_TTL=${REDIS_CACHE_TTL:-3600}
+      # Workers and concurrency
+      - WEB_CONCURRENCY=${WEB_CONCURRENCY:-8}
+      - GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '3.50'
+          memory: 4096M
+        reservations:
+          cpus: '1.00'
+          memory: 1024M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"

@@ -1,0 +1,61 @@
+# ─── Secrets & Environment ──────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# ─── Git & IDEs ─────────────────────────────────────────────────
+.git
+.gitignore
+.vscode
+.idea
+.fleet
+*.sublime-project
+*.sublime-workspace
+
+# ─── Python Bytecode & Cache ─────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ─── Virtual Environments ───────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# ─── Non-Production Demo & Documentation ────────────────────────
+Agentic-RAG-demo/
+docs/
+*.md
+!README.md
+scratch/
+
+# ─── Local Database & Runtime Files ─────────────────────────────
+data/*.db
+data/audit.db
+uploads/*
+!uploads/.gitkeep
+*.log
+*.tmp
